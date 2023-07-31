@@ -20,11 +20,11 @@ This could be similarly accomplished with pythons virtual environments if you ar
 # Running:
 
 ## Training
-This package can run both training and evaluation.  To train, run:
+This package can run both training and evaluation.  To train from the `minimal_fsdp` folder, run:
 ```
-mpiexec -n $NUM_GPUS python -m basic_training.py <command line args>
+mpiexec -n $NUM_GPUS python basic_training.py <command line args>
 ```
-where `$NUM_GPUS` is the number of GPUs you want to use and needs to be configured in your environment in this example.  The `mpiexec` command is indicating whatever command your computer might use to launch multiple tasks.
+where `$NUM_GPUS` is the number of GPUs you want to use and needs to be configured in your environment in this example.  The `mpiexec` command is indicating whatever command your computer might use to launch multiple tasks. If you are using it on a single task, you can omit 'mpiexec' and the '-n $NUM_GPUS' portions.
 ## Arguments
 ### Model and environment args:
 ```
@@ -32,26 +32,33 @@ where `$NUM_GPUS` is the number of GPUs you want to use and needs to be configur
 --model: The model to use.  Currently, only 'mingpt' is supported.
 --run_name: The name of the run; will be used to label checkpoints.
 --vocab_size: The size of the vocabulary to use. Tokenizer dependent.
---seq_len: The sequence length to use.  Data in /data is already tokenized to 256, so anything <256 will work with it.
+--seq_len: The sequence length to use.  
+        Data in /data is already tokenized to 256, so anything <256 will work with it.
 --num_heads: Number of attention heads in the multi-head attention of the model
 --num_layers: number of layers
 --embed_size: embedding dimension of the model
---restart_checkpoint_file: If you want to restart from a checkpoint, provide the path to it here.
+--restart_checkpoint_file: If you want to restart from a checkpoint, 
+        provide the path to it here.
 
 ```
 ### FSDP args:
 ```
---sharding: The sharding strategy to use.  choose from full-shard, grad-shard, no-shard, hybrid-full-shard, hybrid-grad-shard
---precision: The precision to use.  choose from 'float32', 'bf16'.  bf16 is highly recommended.
+--sharding: The sharding strategy to use.  
+        Choose from full-shard, grad-shard, no-shard, hybrid-full-shard, hybrid-grad-shard
+--precision: The precision to use.  choose from 'float32', 'bf16'.  
+        bf16 is highly recommended.
 --cpu_offload: Whether to offload the optimizer and model parameters to CPU.  
---activation_checkpoints: Whether to use activation checkpointing.  Gradients won't be stored, but recalculated in .backward() call.
---meta_init: For large models that wont fit on CPU/GPU memory, will use meta initialization to reduce memory footprint.
+--activation_checkpoints: Whether to use activation checkpointing.  
+        Gradients won't be stored, but recalculated in .backward() call.
+--meta_init: For large models that wont fit on CPU/GPU memory, 
+        will use meta initialization to reduce memory footprint.
 
 ```
 ### Training args:
 ```
 --train_data/--val_data: path to the training/validation data respectively.
---max_epochs: The maximum number of epochs to train for.  If set to `<0`, will skip training and only evaluate.
+--max_epochs: The maximum number of epochs to train for.  
+        If set to `<0`, will skip training and only evaluate.
 --lr: The learning rate to use.
 --dropout: The dropout to use in FFNs.
 --batch_size: The batch size to use.  This is the batch size per GPU.
@@ -62,7 +69,8 @@ This isn't really evaluation, but more like loading a model and putting a prompt
 
 ### Arguments
 ```
---max_epochs: Set to -1 to skip training and only evaluate.  Else, the model will be trained first.
+--max_epochs: Set to -1 to skip training and only evaluate.  
+        Else, the model will be trained first.
 --prompt: The prompt to put through the model.
 
 ```
