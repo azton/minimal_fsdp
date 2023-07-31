@@ -1,0 +1,10 @@
+pytorch==2.0.1
+torchvision==0.15.2
+torchaudio==2.0.2
+pytorch-cuda==11.7
+transformers==4.29.2
+tensorboard==2.12.1
+h5py==3.7.0
+pynvml==11.5.0
+einops==0.6.1
+lightning_bolts-0.7.0
