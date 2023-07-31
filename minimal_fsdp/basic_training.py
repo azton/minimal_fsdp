@@ -105,7 +105,7 @@ def run_the_thing():
         model.eval()
 
         context = "Romeo, Romeo, wherefore art thou " if args.prompt is None else args.prompt
-        print(context)
+        print(f"Starting with context: {context}")
         context_tokens = tokenizer.encode(context)
         out_ids = context_tokens.ids
         inp_ids = context_tokens.ids
@@ -124,12 +124,11 @@ def run_the_thing():
             # keeps some entropy in the output.  You can use argmax if you really
             # want to.
             generated = torch.multinomial(logits[:, -1], num_samples=1).squeeze(1)
-            # generated = torch.argmax(generated[0], dim=-1)
             out_ids.append(generated.item())
             inp_ids.append(generated.item())
-        print(out_ids)
+        print(f"Input context + generated token ids: {out_ids}")
         text = tokenizer.decode(out_ids)
-        print(text)
+        print(f"Decoded generated text:\n{text}")
 
 if __name__ == '__main__':
     run_the_thing()
