@@ -16,9 +16,6 @@ import torch
 import torch.nn as nn
 from torch.nn import functional as F
 import os
-from genomelm.util.arguments import (
-    dotdict
-    )
 from transformers.utils import ModelOutput
 from typing import Optional, Tuple
 from einops import rearrange

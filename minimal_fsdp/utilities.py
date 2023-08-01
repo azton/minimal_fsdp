@@ -72,10 +72,9 @@ def setup_environment(args: Namespace) -> Namespace:
         Easily extensible by mapping, eg, slurm environment variables to the ones used here.
 
     """
-    machine = args.environment
     if not torch.cuda.is_available():
         raise NotImplementedError("No CUDA? FSDP needs CUDA or accelerators")
-    if environment == 'pbs':
+    if args.environment == 'pbs':
         os.environ['RANK'] = os.environ['PMI_RANK']# global 
         os.environ['LOCAL_RANK'] = os.environ['PMI_LOCAL_RANK'] # local
         os.environ['WORLD_SIZE'] = os.environ['PMI_SIZE']
@@ -86,7 +85,7 @@ def setup_environment(args: Namespace) -> Namespace:
         args.local_size = int(os.environ['PMI_LOCAL_SIZE'])
         args.backend = 'nccl'
         args.num_nodes = args.world_size // args.local_size
-    elif machine == 'local':
+    elif args.environment == 'local':
         # torch.backends.cuda.flash_sdp_enabled()
         os.environ['MASTER_ADDR'] = 'localhost'
         os.environ['MASTER_PORT'] = os.environ.get('MASTER_PORT', '12355')
