@@ -109,7 +109,7 @@ def run_the_thing():
         context_tokens = tokenizer.encode(context)
         out_ids = context_tokens.ids
         inp_ids = context_tokens.ids
-        for tok_gen in tqdm(range(150)):
+        for tok_gen in tqdm(range(args.num_tokens)):
             if len(inp_ids) > args.seq_length:
                 inp_ids = inp_ids[-seq_length:]
             context = torch.tensor(inp_ids, 
