@@ -337,6 +337,7 @@ def get_args()-> Namespace:
     parser.add_argument('--meta_init', action='store_true')
     parser.add_argument('--activation_checkpointing', action='store_true')
     parser.add_argument('--prompt', type=str, default=None)
+    parser.add_argument('--num_tokens', type=int, default=100)
     args = parser.parse_args()
     if zero:
         print('Running with parameters:')

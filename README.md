@@ -72,5 +72,6 @@ This isn't really evaluation, but more like loading a model and putting a prompt
 --max_epochs: Set to -1 to skip training and only evaluate.  
         Else, the model will be trained first.
 --prompt: The prompt to put through the model.
+--num_tokens: The number of tokens to generate.
 
 ```
