@@ -132,7 +132,7 @@ def setup_model(args: Namespace) -> torch.nn.Module:
 
     # set up mixed precision
     prec = torch.float32 if args.precision == 'float32' else torch.bfloat16
-    mixed_precision=MixedPrecision(
+    mixed_precision = MixedPrecision(
         param_dtype=prec,
         reduce_dtype=prec,
         buffer_dtype=prec

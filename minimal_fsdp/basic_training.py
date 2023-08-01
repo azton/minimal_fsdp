@@ -6,12 +6,12 @@
     and using hybrid sharding to cope with larger models that don't 
     fit on a single GPU.
 
-    We don't use huggingface (although that could be a drop-in replacement).
+    We don't use huggingface except for a pre-trained tokenizer
+    (although HF models could be a drop-in replacement).
     For large models (>20B parameters), we need to use special initialization,
     and that is easier to manage without hiding the models in HF.
 
-    This is significantly plugged from https://github.com/karpathy/nanoGPT
-    with modification to work with FSDP.
+
 """
 
 from argparse import ArgumentParser
