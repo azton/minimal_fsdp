@@ -6,10 +6,16 @@ The example dataset in `/data` is a sampling of Shakespeares works; its not larg
 
 # Setup
 You need an environment where we can install pytorch and other dependencies.  FSDP requires at least `pytorch>= 1.13`, however, activation checkpointing isnt functioning with FSDP until `pytorch >= 2.0`.
-Get`minimal_fsdp` and using conda:
+Get`minimal_fsdp` using a conda environment:
 ```
 conda create -n fsdp python=3.10
 conda activate fsdp
+```
+This was developed on pytorch 2.0.0; it may work on later versions, but to ensure it functions on Polaris, get the correct version using:
+```
+conda install pytorch==2.0.0 torchvision==0.15.0 torchaudio==2.0.0 pytorch-cuda=11.8 -c pytorch -c nvidia
+```
+```
 git clone git@github.com:azton/minimal_fsdp.git
 cd minimal_fsdp
 pip install -e .
