@@ -21,7 +21,8 @@ import torch
 import torch.nn as nn
 from tqdm import tqdm
 from minimal_fsdp.utilities import *
-from tokenizers import Tokenizer
+from transformers import GPT2Tokenizer
+
 rank = int(os.environ.get('PMI_RANK', '0'))
 zero = rank == 0
 
@@ -58,6 +59,9 @@ def run_the_thing():
                 optimizer.zero_grad()
                 output = model(input_ids = batch[0], labels = batch[1])
                 output.loss.backward()
+                torch.nn.utils.clip_grad_norm_(model.parameters(), 
+                                               1.0)
+
                 optimizer.step()
                 scheduler.step()
                 train_loss.append(output.loss.item())
@@ -86,7 +90,7 @@ def run_the_thing():
                 epoch_pbar.update()
         if zero:
             epoch_pbar.close()
-        print('Saving checkpoint for restart/inference ...')
+        if zero: print('Saving checkpoint for restart/inference ...')
         save_restart_checkpoint('./checkpoints',
                                     'FINAL',
                                     model,
@@ -94,21 +98,21 @@ def run_the_thing():
                                     scheduler,
                                     args,
                                     epoch)
-        print('\n\n Training complete! \n\n')
+        if zero: print('\n\n Training complete! \n\n')
     else:
         # loading prior model state for inference
         if zero: print("Skipping training and loading checkpoint for inference...")
         model = load_fsdp_model_checkpoint(model, args)
     # now that the training is "complete", we can do a pass of inference and see what it'll do
     if zero:
-        tokenizer = Tokenizer.from_pretrained('gpt2')
+        tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
         model.eval()
 
         context = "Romeo, Romeo, wherefore art thou " if args.prompt is None else args.prompt
         print(f"Starting with context: {context}")
-        context_tokens = tokenizer.encode(context)
-        out_ids = context_tokens.ids
-        inp_ids = context_tokens.ids
+        context_tokens = tokenizer(context)
+        out_ids = context_tokens['input_ids']
+        inp_ids = context_tokens['input_ids']
         for tok_gen in tqdm(range(args.num_tokens)):
             if len(inp_ids) > args.seq_length:
                 inp_ids = inp_ids[-seq_length:]

@@ -80,7 +80,7 @@ def setup_environment(args: Namespace) -> Namespace:
         os.environ['WORLD_SIZE'] = os.environ['PMI_SIZE']
         args.world_size = int(os.environ['PMI_SIZE'])
         args.global_rank = int(os.environ['PMI_RANK'])
-        args.rank = args['global_rank']
+        args.rank = args.global_rank
         args.local_rank = int(os.environ['PMI_LOCAL_RANK']) # wraparound since LOCAL_RANK is actually global?? WRT/ 
         args.local_size = int(os.environ['PMI_LOCAL_SIZE'])
         args.backend = 'nccl'
@@ -120,7 +120,6 @@ def setup_model(args: Namespace) -> torch.nn.Module:
     else:
         raise NotImplementedError(f"Model {args.model} not implemented")
     sharding = ShardingStrategy.NO_SHARD
-    device = torch.cuda.current_device() if not args.cpu_offload else None
     if args.sharding == 'full-shard':
         sharding = ShardingStrategy.FULL_SHARD
     elif args.sharding == 'grad-shard':
@@ -168,7 +167,7 @@ def setup_model(args: Namespace) -> torch.nn.Module:
             cpu_offload=CPUOffload(offload_params=args.cpu_offload),
             backward_prefetch = BackwardPrefetch.BACKWARD_PRE, # bit faster async comms, bit higher memory
             limit_all_gathers=False,
-            # use_orig_params=True,
+            use_orig_params=True,
             forward_prefetch=True,
 
             )
@@ -256,7 +255,7 @@ def save_restart_checkpoint(save_directory: Union[str, Path],
                 cpu_state = model.state_dict()
     # call on every rank, only actually exists on rank 0
     if args.sharding != 'no-shard':
-        opt_state = FSDP.full_optim_state_dict(model, optimizer) # specify group if using HYBRID_SHARD...
+        opt_state = FSDP.optim_state_dict(model, optimizer) # specify group if using HYBRID_SHARD...
     else:
         opt_state = optimizer.state_dict()
     if args.rank == 0:
@@ -306,8 +305,8 @@ def get_dataloaders(args:Namespace):
     val_loader = BasicLoader(args, split='val')
     train_sampler = DistributedSampler(train_loader, shuffle=True, num_replicas = args.world_size, rank = args.rank)
     val_sampler = DistributedSampler(val_loader, shuffle=False, num_replicas = args.world_size, rank = args.rank)
-    train_loader = DataLoader(train_loader, batch_size=args.batch_size, sampler=train_sampler, num_workers=0, pin_memory=True)
-    val_loader = DataLoader(val_loader, batch_size=args.batch_size, sampler=val_sampler, num_workers=0, pin_memory=True)
+    train_loader = DataLoader(train_loader, batch_size=args.batch_size, sampler=train_sampler, num_workers=2, pin_memory=True)
+    val_loader = DataLoader(val_loader, batch_size=args.batch_size, sampler=val_sampler, num_workers=2, pin_memory=True)
     return train_loader, val_loader
 
 def get_args()-> Namespace:
