@@ -3,7 +3,7 @@
 #PBS -l place=scatter
 #PBS -l walltime=1:00:00
 #PBS -l filesystems=home:eagle
-#PBS -q debug
+#PBS -q R564516
 #PBS -A tpc
 #PBS -N minfsdp
 

@@ -104,35 +104,35 @@ def run_the_thing():
         if zero: print("Skipping training and loading checkpoint for inference...")
         model = load_fsdp_model_checkpoint(model, args)
     # now that the training is "complete", we can do a pass of inference and see what it'll do
-    if zero:
-        tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
-        model.eval()
+    # if zero:
+    tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
+    model.eval()
 
-        context = "Romeo, Romeo, wherefore art thou " if args.prompt is None else args.prompt
-        print(f"Starting with context: {context}")
-        context_tokens = tokenizer(context)
-        out_ids = context_tokens['input_ids']
-        inp_ids = context_tokens['input_ids']
-        for tok_gen in tqdm(range(args.num_tokens)):
-            if len(inp_ids) > args.seq_length:
-                inp_ids = inp_ids[-seq_length:]
-            context = torch.tensor(inp_ids, 
-                                dtype=torch.long, 
-                                device=torch.cuda.current_device()).unsqueeze(0)
-            # model.generate in mingpt crashes here with FSDP.  
-            # workaround using forward to get the same result.
-            generated = model.forward(context)
-            logits = generated.logits
-            logits = torch.nn.functional.softmax(logits, dim=-1)
-            # just snagging the max leads to mode collapse.  multinomial 
-            # keeps some entropy in the output.  You can use argmax if you really
-            # want to.
-            generated = torch.multinomial(logits[:, -1], num_samples=1).squeeze(1)
-            out_ids.append(generated.item())
-            inp_ids.append(generated.item())
-        print(f"Input context + generated token ids: {out_ids}")
-        text = tokenizer.decode(out_ids)
-        print(f"Decoded generated text:\n{text}")
+    context = "Romeo, Romeo, wherefore art thou " if args.prompt is None else args.prompt
+    if zero: print(f"Starting with context: {context}")
+    context_tokens = tokenizer(context)
+    out_ids = context_tokens['input_ids']
+    inp_ids = context_tokens['input_ids']
+    for tok_gen in tqdm(range(args.num_tokens)):
+        if len(inp_ids) > args.seq_length:
+            inp_ids = inp_ids[-args.seq_length:]
+        context = torch.tensor(inp_ids, 
+                            dtype=torch.long, 
+                            device=torch.cuda.current_device()).unsqueeze(0)
+        # model.generate in mingpt crashes here with FSDP.  
+        # workaround using forward to get the same result.
+        generated = model.forward(context)
+        logits = generated.logits
+        logits = torch.nn.functional.softmax(logits, dim=-1)
+        # just snagging the max leads to mode collapse.  multinomial 
+        # keeps some entropy in the output.  You can use argmax if you really
+        # want to.
+        generated = torch.multinomial(logits[:, -1], num_samples=1).squeeze(1)
+        out_ids.append(generated.item())
+        inp_ids.append(generated.item())
+    if zero: print(f"Input context + generated token ids: {out_ids}")
+    text = tokenizer.decode(out_ids)
+    if zero: print(f"Decoded generated text:\n{text}")
 
 if __name__ == '__main__':
     run_the_thing()
